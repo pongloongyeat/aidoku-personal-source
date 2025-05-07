@@ -1,0 +1,11 @@
+[
+  {
+    "id": "en.hentaifox2.custom",
+    "name": "HentaiFox Custom",
+    "file": "en.hentaifox2.custom-v3.aix",
+    "icon": "en.hentaifox2.custom-v3.png",
+    "lang": "en",
+    "version": 3,
+    "nsfw": 2
+  }
+]
