@@ -1,9 +1,9 @@
 {
     "info": {
-        "id": "en.hentaifox2",
+        "id": "en.hentaifox2.custom",
         "lang": "en",
-        "name": "HentaiFox*",
-        "version": 2,
+        "name": "HentaiFox Custom",
+        "version": 3,
         "url": "https://hentaifox.com",
         "nsfw": 2
     }
