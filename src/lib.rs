@@ -4,6 +4,8 @@ mod helper;
 
 extern crate alloc;
 
+use std::collections::HashMap;
+
 use aidoku::{
     error::Result,
     prelude::*,
@@ -189,6 +191,30 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
     }]))
 }
 
+enum WeirdExtensions {
+    Jpg,
+    Webp,
+    TJpg,
+    TWebp,
+}
+
+impl WeirdExtensions {
+    fn build_image_url(&self, img_dir: String, g_id: String, page: i32) -> String {
+        match self {
+            WeirdExtensions::Jpg => format!("https://i3.hentaifox.com/{img_dir}/{g_id}/{page}.jpg"),
+            WeirdExtensions::Webp => {
+                format!("https://i3.hentaifox.com/{img_dir}/{g_id}/{page}.webp")
+            }
+            WeirdExtensions::TJpg => {
+                format!("https://i3.hentaifox.com/{img_dir}/{g_id}/{page}t.jpg")
+            }
+            WeirdExtensions::TWebp => {
+                format!("https://i3.hentaifox.com/{img_dir}/{g_id}/{page}t.webp")
+            }
+        }
+    }
+}
+
 #[get_page_list]
 fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
     let url = format!("https://hentaifox.com/gallery/{chapter_id}");
@@ -204,19 +230,28 @@ fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
 
     let total = helper::numbers_only_from_string(total_pages);
 
-    // // Do a test hit on the endpoint to see if the manga uses .jpg or .webp.
-    // // Since newer manga is using .webp, testing using .webp first will be more
-    // // efficient than testing with .jpg first.
-    let mut extension = "webp";
-    let test_url = format!("https://i2.hentaifox.com/{img_dir}/{g_id}/1.{extension}");
-    let status_code = Request::new(test_url, HttpMethod::Get).status_code();
+    // Some sources use 1t.jpg instead of 1.jpg lol...
+    // Do a test hit to see which one it uses.
+    let test_map = HashMap::<WeirdExtensions, String>::new();
+    let tests: Vec<WeirdExtensions> = vec![
+        WeirdExtensions::Jpg,
+        WeirdExtensions::Webp,
+        WeirdExtensions::TJpg,
+        WeirdExtensions::TWebp,
+    ];
+    let mut passing_test: WeirdExtensions::Jpg;
 
-    if status_code == 404 {
-        extension = "jpg";
+    for test in tests {
+        let test_url = test.build_image_url(img_dir, g_id, 1);
+        let status_code = Request::new(test_url, HttpMethod::Get).status_code();
+        if status_code == 200 {
+            passing_test = test;
+            break;
+        }
     }
 
     for i in 1..=total {
-        let img_url = format!("https://i2.hentaifox.com/{img_dir}/{g_id}/{i}.{extension}");
+        let img_url = passing_test.build_image_url(img_dir, g_id, i);
         pages.push(Page {
             index: i,
             url: img_url,
