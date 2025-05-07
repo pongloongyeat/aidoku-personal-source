@@ -91,7 +91,7 @@ jobs:
         if-no-files-found: ignore
     -
       name: Uploading gh-pages deployment as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: gh-pages
